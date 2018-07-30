@@ -1,16 +1,49 @@
 require('dotenv/config');
 
-const puppeteer = require('puppeteer');
+const repl = require('repl');
+const SpotifyBrowser = require('./lib/SpotifyBrowser');
+
+async function initREPL() {
+  const spotify = new SpotifyBrowser();
+  await spotify.open();
+
+  const server = repl.start({
+    prompt: '>',
+    // eval: (cmd, context, filename, cb) => {
+
+    // },
+    completer(line) {
+      const match = line.match(/^.play(.*)/);
+      let results = [];
+      if (match) {
+        const input = match[1].trim();
+        const completions = spotify.getPlaylistNames();
+        const hits = completions.filter(item => item.startsWith(input));
+        results = hits.length === 1 ? [`.play ${hits[0]}`] : hits;
+      }
+      return [results, line];
+    },
+  });
+  server.defineCommand('play', {
+    help: 'Start playing specified playlist name',
+    async action(name) {
+      this.clearBufferedCommand();
+      console.log(`Play ${name}!`);
+      try {
+        await spotify.play(name);
+      } catch (e) {
+        console.error(e.message);
+      }
+      this.displayPrompt();
+    },
+  });
+
+  server.on('exit', async () => {
+    console.log('Closing session...');
+    await spotify.close();
+  });
+}
 
 (async () => {
-  console.log('Loading...');
-  const browser = await puppeteer.launch();
-  const page = await browser.newPage();
-  await page.goto('https://accounts.spotify.com/en/login');
-  console.log('Logging in...');
-  await page.type('#login-username', process.env.SPOTIFY_USER);
-  await page.type('#login-password', process.env.SPOTIFY_PASS);
-  await page.click('#login-button');
-  await page.screenshot({path: 'login.png'});
-  await browser.close();
+  await initREPL();
 })();
