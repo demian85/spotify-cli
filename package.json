@@ -15,11 +15,11 @@
   "license": "ISC",
   "dependencies": {
     "dotenv": "^6.0.0",
-    "puppeteer": "^1.6.0"
+    "puppeteer": "^1.8.0"
   },
   "devDependencies": {
-    "eslint": "^5.2.0",
-    "eslint-config-airbnb-base": "^13.0.0",
-    "eslint-plugin-import": "^2.13.0"
+    "eslint": "^5.5.0",
+    "eslint-config-airbnb-base": "^13.1.0",
+    "eslint-plugin-import": "^2.14.0"
   }
 }
